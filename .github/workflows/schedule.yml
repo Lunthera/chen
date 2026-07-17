@@ -2,7 +2,7 @@ name: EMA/MACD 每小时定时检测
 
 on:
   schedule:
-    - cron: '0 * * * *'
+    - cron: '*/5 * * * *'
   workflow_dispatch:
 
 jobs:
