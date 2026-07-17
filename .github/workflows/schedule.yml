@@ -1,0 +1,46 @@
+name: EMA/MACD 每小时定时检测
+
+on:
+  schedule:
+    # 北京时间每小时整点运行（北京时间 = UTC + 8）
+    # 所以在 UTC 的每个小时运行，会覆盖北京时间的每个整点
+    - cron: '0 * * * *'
+  
+  # 允许手动触发工作流
+  workflow_dispatch:
+
+jobs:
+  ema-macd-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+      # 拉取仓库代码
+      - name: 检出代码
+        uses: actions/checkout@v4
+      
+      # 设置 Python 环境
+      - name: 设置 Python 环境
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      
+      # 安装依赖
+      - name: 安装依赖包
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests pandas
+      
+      # 运行 EMA/MACD 检测脚本
+      - name: 运行 EMA/MACD 检测
+        run: python send.py
+      
+      # 提交状态文件用于持久化状态
+      - name: 提交状态文件
+        if: always()
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add btc_ema_state.json || true
+          git commit -m "auto: 更新 EMA/MACD 检测状态" || true
+          git push || true
